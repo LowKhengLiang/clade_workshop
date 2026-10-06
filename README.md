@@ -16,6 +16,8 @@ A single-file, kid-friendly Kanban board demo for an IT PMO team at a fictitious
 - Filter by project, status, priority and assignee. The KPI tiles always count all tasks, regardless of filters.
 - Overdue tasks (due date before today and not Done) are highlighted. Seed due dates are relative to today, so overdue examples always exist.
 - Add Task form with validation. Each new task gets an ID like `UOB-ITPM-####` and triggers an email notification through [FormSubmit](https://formsubmit.co). If the email fails, the task is still added and a warning toast is shown.
+- **Briefing reminder:** after 10 seconds on the page a popup announces the IT Project Briefing (Wed 14 Oct 2026, 2:00 PM, Town Hall Meeting Room).
+- **WhatsApp widget:** a floating 💬 button (bottom right) opens a dialog of suggested IT-project questions; each one opens WhatsApp chat with the PMO number with the question prefilled.
 - Delete with an inline "Delete? Yes/No" confirmation.
 
 ## Run locally
@@ -28,7 +30,7 @@ open index.html
 
 - Everything lives in `index.html` (markup, styles, script). There is no build step, bundler or package manager.
 - Nothing is persisted (no localStorage, cookies or IndexedDB). Refreshing the page resets the board to its seed data.
-- The only network call is the FormSubmit AJAX request. Set `FORMSUBMIT_ENDPOINT` at the top of the script to your own endpoint. Prefer FormSubmit's random-string alias over a raw email address, since the page source is public.
+- The only network call is the FormSubmit AJAX request (the WhatsApp suggestions are plain links to `wa.me` that open in a new tab). Set `FORMSUBMIT_ENDPOINT` at the top of the script to your own endpoint. Prefer FormSubmit's random-string alias over a raw email address, since the page source is public.
 
 ## Security
 

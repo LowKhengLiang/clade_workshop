@@ -313,7 +313,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
    9. TOASTS
    ========================================================================== */
 .toast-region {
-  position: fixed; right: var(--s-4); bottom: var(--s-4); display: flex; flex-direction: column;
+  position: fixed; right: var(--s-4); bottom: calc(60px + 2 * var(--s-4)); display: flex; flex-direction: column;
   gap: var(--s-2); z-index: 20; max-width: calc(100vw - 2 * var(--s-4));
 }
 .toast {
@@ -322,6 +322,51 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 }
 .toast.success { background: var(--mint); }
 .toast.warning { background: var(--butter); }
+
+
+/* ==========================================================================
+   9b. BRIEFING REMINDER POPUP
+   ========================================================================== */
+.briefing-backdrop {
+  position: fixed; inset: 0; background: rgba(58, 49, 87, .5);
+  display: flex; align-items: center; justify-content: center; padding: var(--s-4); z-index: 30;
+}
+.briefing-backdrop[hidden] { display: none; }
+.briefing {
+  background: var(--butter); border: 3px solid var(--ink); border-radius: var(--radius);
+  width: 100%; max-width: 420px; padding: var(--s-5); box-shadow: 0 8px 0 var(--ink);
+}
+.briefing h2 { font-size: 20px; font-weight: 800; margin-bottom: var(--s-3); }
+.briefing p { font-weight: 700; margin-bottom: var(--s-2); }
+.briefing .form-actions { margin-top: var(--s-4); }
+
+
+/* ==========================================================================
+   9c. WHATSAPP CHAT WIDGET
+   ========================================================================== */
+.wa-fab {
+  position: fixed; right: var(--s-4); bottom: var(--s-4); width: 60px; height: 60px; z-index: 15;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: var(--mint); border: 3px solid var(--ink); border-radius: 50%; box-shadow: var(--pop);
+  font-size: 28px; line-height: 1; padding: 0;
+}
+.wa-panel {
+  position: fixed; right: var(--s-4); bottom: calc(60px + var(--s-4) + var(--s-3)); z-index: 15;
+  width: 320px; max-width: calc(100vw - 2 * var(--s-4)); max-height: 70vh; overflow-y: auto;
+  background: var(--surface); border: 3px solid var(--ink); border-radius: var(--radius);
+  padding: var(--s-4); box-shadow: 0 6px 0 var(--ink);
+}
+.wa-panel[hidden] { display: none; }
+.wa-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-2); }
+.wa-head h2 { font-size: 18px; font-weight: 800; }
+.wa-intro { font-weight: 700; margin-bottom: var(--s-3); }
+.wa-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.wa-query {
+  display: block; text-decoration: none; color: var(--ink); font-weight: 700;
+  background: var(--lav-bg); border: 3px solid var(--ink); border-radius: var(--radius-sm);
+  padding: var(--s-2) var(--s-3);
+}
+.wa-query:hover, .wa-query:focus-visible { background: var(--mint); }
 
 /* ==========================================================================
    10. RESPONSIVE + MOTION
@@ -467,6 +512,28 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 </div>
 
 <!-- ============================ TOASTS ============================ -->
+<!-- ========================= BRIEFING REMINDER POPUP ========================= -->
+<div class="briefing-backdrop" id="briefing" hidden>
+  <div class="briefing" role="dialog" aria-modal="true" aria-labelledby="briefing-title">
+    <h2 id="briefing-title">📣 Reminder: IT Project Briefing</h2>
+    <p>🗓️ Next Wednesday, 14 Oct 2026</p>
+    <p>🕑 2:00 PM</p>
+    <p>📍 Town Hall Meeting Room</p>
+    <div class="form-actions"><button type="button" class="btn" id="briefing-close">Got it!</button></div>
+  </div>
+</div>
+
+<!-- ============================ WHATSAPP WIDGET ============================ -->
+<button type="button" class="wa-fab" id="wa-fab" aria-label="Chat with IT PMO on WhatsApp" aria-expanded="false" aria-controls="wa-panel">💬</button>
+<div class="wa-panel" id="wa-panel" role="dialog" aria-labelledby="wa-title" hidden>
+  <div class="wa-head">
+    <h2 id="wa-title">💬 IT PMO Assistant</h2>
+    <button type="button" class="icon-btn" id="wa-close" aria-label="Close chat">×</button>
+  </div>
+  <p class="wa-intro">Hi! 👋 Pick a question to ask us on WhatsApp:</p>
+  <div class="wa-list" id="wa-list"></div>
+</div>
+
 <div class="toast-region" id="toasts" aria-live="polite" aria-atomic="false"></div>
 
 <!--
@@ -1294,6 +1361,55 @@ function initModalEvents() {
 }
 
 /* ==========================================================================
+   BRIEFING REMINDER — popup after 10 seconds on the page (static text only)
+   ========================================================================== */
+function initBriefingReminder() {
+  const dlg = document.getElementById("briefing");
+  const close = document.getElementById("briefing-close");
+  function hide() { dlg.hidden = true; }
+  close.addEventListener("click", hide);
+  dlg.addEventListener("click", function (e) { if (e.target === dlg) hide(); });
+  document.addEventListener("keydown", function (e) { if (!dlg.hidden && e.key === "Escape") hide(); });
+  setTimeout(function () { dlg.hidden = false; close.focus(); }, 10000);
+}
+
+/* ==========================================================================
+   WHATSAPP WIDGET HOOK — icon click opens a dialog of suggested IT-project queries
+   ========================================================================== */
+const WHATSAPP_NUMBER = "6512345678";
+const WA_QUERIES = [
+  "📋 What is the status of my IT project?",
+  "⏰ Which IT projects are overdue?",
+  "🔥 Which tasks are high priority this week?",
+  "🆕 How do I request a new IT project?",
+  "📅 When is the next IT Project Briefing?",
+  "👤 Who is the project owner for my project?"
+];
+
+function initWhatsAppWidget() {
+  const fab = document.getElementById("wa-fab");
+  const panel = document.getElementById("wa-panel");
+  const list = document.getElementById("wa-list");
+  WA_QUERIES.forEach(function (q) {
+    const a = document.createElement("a");
+    a.className = "wa-query";
+    a.textContent = q;   // textContent: no HTML injection
+    a.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(q);
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    list.appendChild(a);
+  });
+  function setOpen(open) {
+    panel.hidden = !open;
+    fab.setAttribute("aria-expanded", String(open));
+    if (open) list.firstChild.focus(); else fab.focus();
+  }
+  fab.addEventListener("click", function () { setOpen(panel.hidden); });
+  document.getElementById("wa-close").addEventListener("click", function () { setOpen(false); });
+  document.addEventListener("keydown", function (e) { if (!panel.hidden && e.key === "Escape") setOpen(false); });
+}
+
+/* ==========================================================================
    INIT
    ========================================================================== */
 seedTasks();
@@ -1302,6 +1418,8 @@ initFilters();
 initDashboardEvents();
 initBoardEvents();
 initModalEvents();
+initBriefingReminder();
+initWhatsAppWidget();
 renderBoard();
 </script>
 </body>

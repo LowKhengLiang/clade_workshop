@@ -10,7 +10,7 @@ A single-file IT PMO Kanban board demo for a fictitious bank: everything lives i
 
 - Vanilla HTML/CSS/JS only: no frameworks, bundlers, npm, CDNs, web fonts, or image files. Icons are Unicode/inline SVG; system font stack.
 - No persistence of any kind (no localStorage, sessionStorage, IndexedDB, cookies). Refreshing resets the board to seed data; the header note says so.
-- The only network call is the FormSubmit AJAX endpoint (`FORMSUBMIT_ENDPOINT`, top of the script). The email address must not appear anywhere else.
+- The only network call is the FormSubmit AJAX endpoint (`FORMSUBMIT_ENDPOINT`, top of the script). The WhatsApp widget (`initWhatsAppWidget`, `WHATSAPP_NUMBER`) only builds `https://wa.me/<number>?text=…` links that open in a new tab (navigation, not a fetch); the CI constraint check allows `wa.me`. The email address must not appear anywhere else.
 - CSS uses custom properties for palette/spacing, no `!important`. Visual style (revamped): kid-friendly "sticker" look, pastel palette (each pastel `--x` has a deeper `--x-deep` partner for outlines/non-text marks), 3px plum `--ink` borders, rounded shapes, emoji icons. Colour never carries meaning alone (text/icon accompanies it).
 - Security: a CSP `<meta>` restricts the page to inline script/style and `connect-src https://formsubmit.co`; keep it in sync if the endpoint changes. Never put user strings into `innerHTML`/attributes without `escapeHtml()`; tooltips/toasts use `textContent`; filter specs from chart marks are whitelisted in `applyFilterSpec`; drops only act on the card being dragged.
 

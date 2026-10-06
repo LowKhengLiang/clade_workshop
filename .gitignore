@@ -8,3 +8,15 @@ id_rsa*
 node_modules/
 _site/
 .playwright-mcp/
+
+# Local Claude Code / MCP tooling (not part of the app)
+.claude/skills/
+.mcp.json
+skills-lock.json
+
+# Editor, logs and temp files
+.vscode/
+.idea/
+*.log
+*.swp
+*.tmp

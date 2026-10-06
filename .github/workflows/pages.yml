@@ -34,8 +34,8 @@ jobs:
           if grep -n '!important' index.html; then
             echo "::error::!important is not allowed"; fail=1
           fi
-          if grep -nE 'https?://' index.html | grep -v 'formsubmit.co'; then
-            echo "::error::Only FormSubmit (endpoint + CSP) may be an external URL"; fail=1
+          if grep -nE 'https?://' index.html | grep -vE 'formsubmit\.co|wa\.me'; then
+            echo "::error::Only FormSubmit (endpoint + CSP) and the wa.me WhatsApp link may be external URLs"; fail=1
           fi
           exit $fail
 
