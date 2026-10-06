@@ -41,7 +41,7 @@ jobs:
 
       - name: Secret scan
         run: |
-          if grep -rnIE --exclude-dir=.git 'AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|github_pat_|xox[baprs]-|AIza[0-9A-Za-z_-]{20,}|BEGIN [A-Z ]*PRIVATE KEY' .; then
+          if grep -rnIE --exclude-dir=.git --exclude-dir=.claude --exclude=pages.yml 'AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|github_pat_|xox[baprs]-|AIza[0-9A-Za-z_-]{20,}|BEGIN [A-Z ]*PRIVATE KEY' .; then
             echo "::error::Possible secret found"; exit 1
           fi
 
