@@ -3,46 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IT PMO – Project Board</title>
+<!-- Security: lock the page down. Only inline script/style run; the single allowed
+     network target is the FormSubmit endpoint; no framing-by-form, no <base>, no plugins. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://formsubmit.co; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>IT PMO Playground</title>
 <style>
 /* ==========================================================================
-   1. DESIGN TOKENS — corporate blue palette + spacing scale
+   1. DESIGN TOKENS — pastel palette, chunky "sticker" borders, rounded shapes
    ========================================================================== */
 :root {
-  --blue-900: #0b2545;
-  --blue-800: #12376b;
-  --blue-700: #1a4a8a;
-  --blue-600: #1f5fae;
-  --blue-500: #2f78c9;
-  --blue-300: #9dc0e6;
-  --blue-100: #e3eef9;
-  --blue-50:  #f3f7fc;
-
-  --ink:       #14202e;
-  --ink-soft:  #4a5a6d;
-  --line:      #d3dce8;
+  --ink:       #3a3157;   /* plum ink: text + outlines */
+  --ink-soft:  #675f86;
+  --canvas:    #fff6fb;
   --surface:   #ffffff;
-  --canvas:    #eaf0f7;
+  --line:      #e7dcf6;
 
-  --p-critical: #c62828;
-  --p-high:     #e08a00;
-  --p-medium:   #2f78c9;
-  --p-low:      #8a95a3;
-  --danger:     #b3261e;
-  --danger-bg:  #fdeceb;
-  --warn-bg:    #fff4dc;
-  --ok-bg:      #e4f4ea;
+  /* pastel fills (backgrounds) and deeper partners (outlines / non-text marks) */
+  --lav:       #cdbfff;  --lav-deep:  #6b55c9;  --lav-bg:  #f3eeff;
+  --sky:       #a9d6ff;  --sky-deep:  #2f78b8;  --sky-bg:  #eaf5ff;
+  --pink:      #ffb3c6;  --pink-deep: #c2415f;  --pink-bg: #ffeef3;
+  --mint:      #a8e6c3;  --mint-deep: #2f8f5b;  --mint-bg: #e9faf1;
+  --peach:     #ffcfa6;  --peach-deep:#b3600f;  --peach-bg:#fff1e4;
+  --butter:    #fff0a3;  --butter-deep:#8a6d00; --butter-bg:#fffbe0;
 
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 24px;
-  --s-6: 32px;
+  --danger:    #b3263e;
+  --focus:     #6b55c9;
 
-  --radius: 6px;
-  --shadow: 0 1px 2px rgba(11, 37, 69, .12), 0 1px 3px rgba(11, 37, 69, .08);
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px;  --s-4: 16px;  --s-5: 24px;  --s-6: 32px;
+
+  --radius:    18px;
+  --radius-sm: 12px;
+  --pop:       0 4px 0 var(--ink);
+  --font: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Hiragino Maru Gothic ProN",
+          "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* ==========================================================================
@@ -50,296 +44,300 @@
    ========================================================================== */
 * { box-sizing: border-box; }
 html { font-family: var(--font); color: var(--ink); }
-body {
-  margin: 0;
-  background: var(--canvas);
-  font-size: 14px;
-  line-height: 1.4;
-}
+body { margin: 0; background: var(--canvas); font-size: 15px; line-height: 1.4; }
 h1, h2, h3, p { margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 [hidden] { display: none; }
-
-:focus-visible {
-  outline: 3px solid var(--blue-500);
-  outline-offset: 2px;
-}
-
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
 /* ==========================================================================
-   3. HEADER + SUMMARY STRIP
+   3. HEADER + BUTTONS
    ========================================================================== */
 .app-header {
-  background: var(--blue-900);
-  color: #fff;
-  padding: var(--s-3) var(--s-5);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-4);
+  background: var(--pink-bg);
+  border-bottom: 3px solid var(--ink);
+  padding: var(--s-4) var(--s-5);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-4);
 }
 .wordmark {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  border: 2px solid #fff;
-  padding: 0 var(--s-2);
-  border-radius: var(--radius);
+  font-size: 22px; font-weight: 900; letter-spacing: .04em;
+  background: var(--butter); border: 3px solid var(--ink); border-radius: var(--radius-sm);
+  padding: 0 var(--s-3); box-shadow: 3px 3px 0 var(--ink); transform: rotate(-2deg);
 }
-.app-title { font-size: 15px; font-weight: 600; color: var(--blue-300); }
-
-.summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2);
-  margin: 0 auto 0 var(--s-4);
-  padding: 0;
-  list-style: none;
-}
-.summary li {
-  background: var(--blue-800);
-  border-radius: var(--radius);
-  padding: var(--s-1) var(--s-3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 72px;
-}
-.summary .num { font-size: 18px; font-weight: 700; }
-.summary .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--blue-300); }
-.summary li.is-overdue .num { color: #ffb4ae; }
+.app-title { font-size: 20px; font-weight: 800; margin-right: auto; }
+.reset-note { width: 100%; font-size: 13px; color: var(--ink-soft); }
 
 .btn {
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  padding: var(--s-2) var(--s-4);
-  font-weight: 600;
-  background: var(--blue-600);
-  color: #fff;
+  border: 3px solid var(--ink); border-radius: 999px;
+  padding: var(--s-2) var(--s-5); font-weight: 800;
+  background: var(--lav); color: var(--ink); box-shadow: var(--pop);
+  transition: transform .08s ease, box-shadow .08s ease;
 }
-.btn:hover { background: var(--blue-500); }
+.btn:hover { background: #bfaeff; }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 .btn[disabled] { opacity: .65; cursor: progress; }
-.btn-secondary { background: var(--surface); color: var(--blue-700); border-color: var(--blue-300); }
-.btn-secondary:hover { background: var(--blue-50); }
-.app-header .btn { background: #fff; color: var(--blue-900); }
-.app-header .btn:hover { background: var(--blue-100); }
-
-.reset-note {
-  width: 100%;
-  font-size: 12px;
-  color: var(--blue-300);
-}
+.btn-secondary { background: var(--surface); }
+.btn-secondary:hover { background: var(--lav-bg); }
 
 /* ==========================================================================
-   4. FILTER BAR
+   4. DASHBOARD — KPI tiles + interactive charts
+   ========================================================================== */
+.dashboard { padding: var(--s-5) var(--s-5) 0; display: flex; flex-direction: column; gap: var(--s-4); }
+.section-title { font-size: 17px; font-weight: 800; }
+.section-hint { font-size: 13px; color: var(--ink-soft); }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: var(--s-3); }
+.kpi {
+  border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: var(--pop);
+  padding: var(--s-3) var(--s-4); background: var(--surface);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  min-height: 92px;
+}
+button.kpi:hover { transform: translateY(-2px); }
+.kpi .kpi-num { font-size: 32px; font-weight: 900; line-height: 1.05; }
+.kpi .kpi-lbl { font-size: 13px; font-weight: 700; }
+.kpi[aria-pressed="true"] { outline: 4px solid var(--focus); outline-offset: 2px; }
+.kpi.s-total    { background: var(--butter-bg); }
+.kpi.s-backlog  { background: var(--lav-bg); }
+.kpi.s-progress { background: var(--sky-bg); }
+.kpi.s-blocked  { background: var(--peach-bg); }
+.kpi.s-done     { background: var(--mint-bg); }
+.kpi.s-overdue  { background: var(--pink-bg); }
+.kpi.s-rate     { background: var(--surface); }
+.meter { width: 100%; height: 12px; border: 2px solid var(--ink); border-radius: 999px; background: var(--mint-bg); overflow: hidden; margin-top: var(--s-1); }
+.meter > span { display: block; height: 100%; background: var(--mint); border-right: 2px solid var(--ink); }
+
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--s-4); }
+.panel {
+  background: var(--surface); border: 3px solid var(--ink); border-radius: var(--radius);
+  box-shadow: var(--pop); padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0;
+}
+.panel header { display: flex; flex-direction: column; gap: 2px; }
+.panel h2 { font-size: 16px; font-weight: 800; }
+.empty-chart { color: var(--ink-soft); text-align: center; padding: var(--s-5) 0; }
+
+/* mark colours: --fill is the pastel, --deep is the outline / non-text signal */
+.s-backlog  { --fill: var(--lav);   --deep: var(--lav-deep); }
+.s-progress { --fill: var(--sky);   --deep: var(--sky-deep); }
+.s-blocked  { --fill: var(--pink);  --deep: var(--pink-deep); }
+.s-done     { --fill: var(--mint);  --deep: var(--mint-deep); }
+.pr-critical { --fill: #ff8fa8; --deep: #b3263e; }
+.pr-high     { --fill: #ffb48a; --deep: #a8520f; }
+.pr-medium   { --fill: #ffe28a; --deep: #8a6d00; }
+.pr-low      { --fill: #bfe9d0; --deep: #2f8f5b; }
+.d-overdue { --fill: var(--pink);   --deep: var(--pink-deep); }
+.d-week    { --fill: var(--peach);  --deep: var(--peach-deep); }
+.d-two     { --fill: var(--butter); --deep: var(--butter-deep); }
+.d-month   { --fill: var(--sky);    --deep: var(--sky-deep); }
+.d-later   { --fill: var(--lav);    --deep: var(--lav-deep); }
+.d-done    { --fill: var(--mint);   --deep: var(--mint-deep); }
+
+.mark { background: var(--fill); border: 2px solid var(--deep); color: var(--ink); font-weight: 800; transition: opacity .15s ease, transform .1s ease; }
+.mark:hover { transform: translateY(-1px); filter: saturate(1.25); }
+.mark.is-dim { opacity: .3; }
+.mark.is-on { border-width: 3px; border-color: var(--ink); }
+
+/* donut */
+.donut-wrap { display: flex; justify-content: center; }
+.donut { width: 100%; max-width: 230px; height: auto; }
+.donut path { fill: var(--fill); stroke: var(--surface); stroke-width: 3; cursor: pointer; transition: opacity .15s ease; }
+.donut path:hover { stroke: var(--deep); }
+.donut path:focus-visible { outline: none; stroke: var(--ink); stroke-width: 5; }
+.donut path.is-dim { opacity: .3; }
+.donut path.is-on { stroke: var(--ink); stroke-width: 3; }
+.donut .ring-empty { fill: none; stroke: var(--line); stroke-width: 32; }
+.donut text { text-anchor: middle; fill: var(--ink); pointer-events: none; }
+.donut .c-num { font-size: 34px; font-weight: 900; }
+.donut .c-lbl { font-size: 12px; font-weight: 700; fill: var(--ink-soft); }
+
+.legend { display: flex; flex-wrap: wrap; gap: var(--s-2); justify-content: center; }
+.legend button {
+  display: inline-flex; align-items: center; gap: 6px; background: var(--surface);
+  border: 2px solid var(--line); border-radius: 999px; padding: 2px var(--s-3); font-size: 13px; font-weight: 700;
+}
+.legend button:hover { border-color: var(--ink); }
+.legend button[aria-pressed="true"] { border-color: var(--ink); background: var(--lav-bg); }
+.swatch { width: 12px; height: 12px; border-radius: 50%; background: var(--fill); border: 2px solid var(--deep); display: inline-block; }
+
+/* horizontal bars (projects stacked by status, priority) */
+.hbars { display: flex; flex-direction: column; gap: var(--s-2); }
+.hrow { display: grid; grid-template-columns: minmax(92px, 140px) 1fr 28px; align-items: center; gap: var(--s-2); }
+.hlabel { background: none; border: 0; padding: 0; text-align: left; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.hlabel:hover { text-decoration: underline; }
+.hlabel[aria-pressed="true"] { color: var(--lav-deep); text-decoration: underline; }
+.htrack { display: flex; height: 28px; background: var(--lav-bg); border-radius: 999px; overflow: hidden; gap: 2px; }
+.hseg { height: 100%; border-radius: 8px; padding: 0; min-width: 0; font-size: 13px; }
+.hseg:first-child { border-top-left-radius: 999px; border-bottom-left-radius: 999px; }
+.hseg:last-child  { border-top-right-radius: 999px; border-bottom-right-radius: 999px; }
+.htotal { font-weight: 800; font-size: 13px; text-align: right; }
+
+/* vertical columns (due-date timeline) */
+.vcols { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--s-2); align-items: end; }
+.vcol { background: none; border: 0; padding: 0; display: flex; flex-direction: column; align-items: stretch; gap: var(--s-1); min-width: 0; }
+.vcol .v-num { font-weight: 800; text-align: center; font-size: 15px; }
+.vcol .v-track { height: 130px; display: flex; align-items: flex-end; border-bottom: 3px solid var(--ink); }
+.vcol .v-fill { width: 100%; border-radius: 12px 12px 0 0; border-bottom: 0; background: var(--fill); border: 2px solid var(--deep); border-bottom: 0; }
+.vcol .v-fill.is-zero { height: 0; border: 0; }
+.vcol .v-lbl { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.15; min-height: 2.4em; }
+.vcol.is-dim { opacity: .3; }
+.vcol.is-on .v-fill { border-color: var(--ink); border-width: 3px; }
+.vcol.is-on .v-lbl { text-decoration: underline; }
+.vcol:hover .v-fill { filter: saturate(1.25); }
+
+/* tooltip */
+.tooltip {
+  position: fixed; z-index: 30; pointer-events: none; max-width: 240px;
+  background: var(--ink); color: #fff; border-radius: var(--radius-sm); padding: var(--s-2) var(--s-3);
+  font-size: 13px; box-shadow: 0 4px 0 rgba(58, 49, 87, .25);
+}
+.tooltip strong { display: block; font-size: 13px; }
+.tooltip span { color: #e9e2ff; }
+
+/* ==========================================================================
+   5. FILTER BAR
    ========================================================================== */
 .filters {
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-  padding: var(--s-3) var(--s-5);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-4);
-  align-items: flex-end;
+  margin: var(--s-5) var(--s-5) 0; background: var(--sky-bg); border: 3px solid var(--ink);
+  border-radius: var(--radius); padding: var(--s-3) var(--s-4);
+  display: flex; flex-wrap: wrap; gap: var(--s-3) var(--s-4); align-items: flex-end;
 }
 .filters .field { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
-.filters label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
-.filters select, .filters input { min-width: 180px; max-width: 100%; }
+.filters label { font-size: 13px; font-weight: 700; }
+.filters select, .filters input { min-width: 160px; max-width: 100%; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; width: 100%; font-size: 13px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; background: var(--butter); border: 2px solid var(--ink);
+  border-radius: 999px; padding: 1px var(--s-3); font-weight: 700;
+}
+.chip button { background: none; border: 0; padding: 0 2px; font-size: 16px; line-height: 1; font-weight: 900; }
 
 input, select, textarea {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--s-2) var(--s-3);
-  background: #fff;
+  border: 2px solid var(--ink); border-radius: var(--radius-sm); padding: var(--s-2) var(--s-3); background: #fff;
 }
 textarea { resize: vertical; width: 100%; }
 input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
-  border-color: var(--danger);
-  background: var(--danger-bg);
+  border-color: var(--danger); background: var(--pink-bg);
 }
 
 /* ==========================================================================
-   5. BOARD + COLUMNS
+   6. BOARD + COLUMNS
    ========================================================================== */
-.board {
-  display: flex;
-  gap: var(--s-4);
-  padding: var(--s-5);
-  align-items: flex-start;
-}
+.board { display: flex; gap: var(--s-4); padding: var(--s-5); align-items: flex-start; }
 .column {
-  flex: 1 1 0;
-  min-width: 0;
-  background: var(--blue-100);
-  border: 2px solid transparent;
-  border-radius: var(--radius);
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;
+  flex: 1 1 0; min-width: 0; background: var(--col-bg, var(--lav-bg));
+  border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: var(--pop);
+  display: flex; flex-direction: column; min-height: 220px;
 }
-.column.is-drop-target {
-  border-color: var(--blue-500);
-  background: #d3e5f7;
-  border-style: dashed;
-}
-.col-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--s-3);
-  border-bottom: 1px solid var(--blue-300);
-}
-.col-head h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; color: var(--blue-800); }
-.col-desc { font-size: 11px; color: var(--ink-soft); padding: var(--s-1) var(--s-3) 0; }
+.column.s-backlog  { --col-bg: var(--lav-bg); }
+.column.s-progress { --col-bg: var(--sky-bg); }
+.column.s-blocked  { --col-bg: var(--peach-bg); }
+.column.s-done     { --col-bg: var(--mint-bg); }
+.column.is-drop-target { border-style: dashed; background: var(--butter-bg); }
+.col-head { display: flex; align-items: center; justify-content: space-between; padding: var(--s-3) var(--s-3) 0; }
+.col-head h2 { font-size: 17px; font-weight: 800; }
+.col-desc { font-size: 12px; color: var(--ink-soft); padding: 0 var(--s-3) var(--s-2); border-bottom: 2px dotted var(--ink-soft); }
 .badge {
-  background: var(--blue-700);
-  color: #fff;
-  border-radius: 999px;
-  padding: 0 var(--s-2);
-  min-width: 24px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 12px;
+  background: var(--fill); border: 2px solid var(--ink); border-radius: 999px;
+  padding: 0 var(--s-2); min-width: 28px; text-align: center; font-weight: 900; font-size: 14px;
 }
-.col-body {
-  padding: var(--s-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  flex: 1;
-}
-.empty { color: var(--ink-soft); font-style: italic; text-align: center; padding: var(--s-4) 0; }
+.col-body { padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-3); flex: 1; }
+.empty { color: var(--ink-soft); text-align: center; padding: var(--s-4) 0; }
 
 /* ==========================================================================
-   6. CARDS
+   7. CARDS
    ========================================================================== */
 .card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  border-left: 6px solid var(--p-medium);
-  box-shadow: var(--shadow);
-  padding: var(--s-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-  cursor: grab;
+  background: var(--surface); border: 2px solid var(--ink); border-radius: var(--radius-sm);
+  box-shadow: 0 4px 0 var(--deep, var(--lav-deep)); padding: var(--s-3);
+  display: flex; flex-direction: column; gap: var(--s-2); cursor: grab;
 }
 .card.is-dragging { opacity: .45; }
-.card.p-critical { border-left-color: var(--p-critical); }
-.card.p-high     { border-left-color: var(--p-high); }
-.card.p-medium   { border-left-color: var(--p-medium); }
-.card.p-low      { border-left-color: var(--p-low); }
-
 .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-2); }
-.card-id { font-size: 11px; font-weight: 700; color: var(--blue-700); letter-spacing: .03em; }
-.card-title { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
-.card-meta { font-size: 12px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
+.card-id { font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+.card-title { font-size: 15px; font-weight: 800; overflow-wrap: anywhere; }
+.card-meta { font-size: 13px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }
 .card-row { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
 
 .pill, .tag, .overdue {
-  display: inline-block;
-  border-radius: 999px;
-  padding: 1px var(--s-2);
-  font-size: 11px;
-  font-weight: 700;
+  display: inline-block; border-radius: 999px; padding: 1px var(--s-2);
+  font-size: 12px; font-weight: 800; border: 2px solid var(--deep, var(--ink));
 }
-.pill { color: #fff; }
-.pill.p-critical { background: var(--p-critical); }
-.pill.p-high     { background: #a86200; }
-.pill.p-medium   { background: var(--p-medium); }
-.pill.p-low      { background: #5f6b79; }
-.tag { background: var(--blue-100); color: var(--blue-800); border: 1px solid var(--blue-300); }
-.overdue { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
-.due { font-size: 12px; }
+.pill { background: var(--fill); color: var(--ink); }
+.tag { background: var(--lav-bg); border-color: var(--lav-deep); }
+.overdue { background: var(--pink-bg); color: var(--danger); border-color: var(--danger); }
+.due { font-size: 13px; }
 
 .card-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
-.move-select { padding: 2px var(--s-2); font-size: 12px; max-width: 120px; }
+.move-select { padding: 2px var(--s-2); font-size: 13px; max-width: 130px; border-radius: 999px; }
 .icon-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  width: 28px; height: 28px;
-  font-size: 18px; line-height: 1;
-  color: var(--ink-soft);
+  background: transparent; border: 2px solid transparent; border-radius: 50%;
+  width: 30px; height: 30px; font-size: 20px; line-height: 1; color: var(--ink-soft); font-weight: 800;
 }
-.icon-btn:hover { background: var(--danger-bg); color: var(--danger); }
-.confirm { display: flex; align-items: center; gap: var(--s-2); font-size: 12px; font-weight: 600; color: var(--danger); }
+.icon-btn:hover { background: var(--pink-bg); color: var(--danger); border-color: var(--danger); }
+.confirm { display: flex; align-items: center; gap: var(--s-2); font-size: 13px; font-weight: 800; color: var(--danger); }
 .confirm button {
-  border: 1px solid var(--danger);
-  border-radius: var(--radius);
-  background: #fff;
-  color: var(--danger);
-  padding: 2px var(--s-2);
-  font-size: 12px;
-  font-weight: 600;
+  border: 2px solid var(--danger); border-radius: 999px; background: #fff; color: var(--danger);
+  padding: 1px var(--s-3); font-size: 13px; font-weight: 800;
 }
 .confirm button.yes { background: var(--danger); color: #fff; }
 
 /* ==========================================================================
-   7. MODAL + FORM
+   8. MODAL + FORM
    ========================================================================== */
 .modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(11, 37, 69, .55);
+  position: fixed; inset: 0; background: rgba(58, 49, 87, .5);
   display: flex; align-items: flex-start; justify-content: center;
-  padding: var(--s-5) var(--s-4);
-  overflow-y: auto;
-  z-index: 10;
+  padding: var(--s-5) var(--s-4); overflow-y: auto; z-index: 10;
 }
 .modal-backdrop[hidden] { display: none; }
 .modal {
-  background: var(--surface);
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 560px;
-  padding: var(--s-5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  background: var(--surface); border: 3px solid var(--ink); border-radius: var(--radius);
+  width: 100%; max-width: 580px; padding: var(--s-5); box-shadow: 0 8px 0 var(--ink);
 }
 .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-4); }
-.modal-head h2 { color: var(--blue-900); font-size: 18px; }
+.modal-head h2 { font-size: 20px; font-weight: 800; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3) var(--s-4); }
 .form-grid .full { grid-column: 1 / -1; }
 .form-field { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
-.form-field label { font-weight: 600; font-size: 13px; }
+.form-field label { font-weight: 700; font-size: 14px; }
 .req { color: var(--danger); }
-.err { color: var(--danger); font-size: 12px; min-height: 0; }
-.form-actions { display: flex; justify-content: flex-end; gap: var(--s-2); margin-top: var(--s-4); }
+.err { color: var(--danger); font-size: 13px; font-weight: 700; }
+.form-actions { display: flex; justify-content: flex-end; gap: var(--s-3); margin-top: var(--s-4); }
 
 /* ==========================================================================
-   8. TOASTS
+   9. TOASTS
    ========================================================================== */
 .toast-region {
-  position: fixed;
-  right: var(--s-4); bottom: var(--s-4);
-  display: flex; flex-direction: column; gap: var(--s-2);
-  z-index: 20;
-  max-width: calc(100vw - 2 * var(--s-4));
+  position: fixed; right: var(--s-4); bottom: var(--s-4); display: flex; flex-direction: column;
+  gap: var(--s-2); z-index: 20; max-width: calc(100vw - 2 * var(--s-4));
 }
 .toast {
-  background: var(--blue-900);
-  color: #fff;
-  border-left: 6px solid var(--blue-300);
-  padding: var(--s-3) var(--s-4);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--lav-bg); border: 3px solid var(--ink); border-radius: var(--radius-sm);
+  padding: var(--s-3) var(--s-4); box-shadow: var(--pop); font-weight: 700;
 }
-.toast.success { background: #0f5132; border-left-color: #7be0a8; }
-.toast.warning { background: #7a4b00; border-left-color: #ffc861; }
+.toast.success { background: var(--mint); }
+.toast.warning { background: var(--butter); }
 
 /* ==========================================================================
-   9. RESPONSIVE — stack columns below 768px
+   10. RESPONSIVE + MOTION
    ========================================================================== */
 @media (max-width: 767px) {
   .board { flex-direction: column; padding: var(--s-4); }
   .column { width: 100%; flex: none; }
-  .app-header, .filters { padding-left: var(--s-4); padding-right: var(--s-4); }
-  .summary { margin-left: 0; }
+  .app-header { padding-left: var(--s-4); padding-right: var(--s-4); }
+  .dashboard { padding: var(--s-4) var(--s-4) 0; }
+  .filters { margin: var(--s-4) var(--s-4) 0; }
   .form-grid { grid-template-columns: 1fr; }
+  .charts { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none; }
+  .wordmark { transform: none; }
 }
 </style>
 </head>
@@ -348,11 +346,21 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 <!-- ============================ HEADER ============================ -->
 <header class="app-header">
   <span class="wordmark" aria-label="IT PMO">IT PMO</span>
-  <p class="app-title">Internal Project Board</p>
-  <ul class="summary" id="summary" aria-label="Board summary"></ul>
-  <button type="button" class="btn" id="open-add">+ Add Task</button>
+  <h1 class="app-title"><span aria-hidden="true">🌈</span> Project playground</h1>
+  <button type="button" class="btn" id="open-add">+ Add task</button>
   <p class="reset-note">Demo mode: the board lives in memory only — refreshing the page resets it to the seeded demo data.</p>
 </header>
+
+<!-- ============================ DASHBOARD ============================ -->
+<section class="dashboard" aria-label="Project overview">
+  <div>
+    <h2 class="section-title"><span aria-hidden="true">📊</span> Quick overview</h2>
+    <p class="section-hint">Hover any chart for details. Click a bar, slice or number to filter the board; click again to undo.</p>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="charts" id="charts"></div>
+</section>
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
 <!-- ============================ FILTER BAR ============================ -->
 <section class="filters" aria-label="Board filters">
@@ -361,35 +369,40 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
     <select id="f-project"></select>
   </div>
   <div class="field">
-    <label for="f-assignee">Assignee contains</label>
-    <input type="text" id="f-assignee" autocomplete="off" placeholder="e.g. Tan">
+    <label for="f-status">Status</label>
+    <select id="f-status"></select>
   </div>
   <div class="field">
     <label for="f-priority">Priority</label>
     <select id="f-priority"></select>
   </div>
+  <div class="field">
+    <label for="f-assignee">Assignee contains</label>
+    <input type="text" id="f-assignee" autocomplete="off" maxlength="60" placeholder="e.g. Tan">
+  </div>
   <button type="button" class="btn btn-secondary" id="clear-filters">Clear filters</button>
+  <div class="chips" id="chips" aria-live="polite"></div>
 </section>
 
 <!-- ============================ BOARD ============================ -->
 <main class="board" id="board">
-  <section class="column" data-status="Backlog" aria-labelledby="h-Backlog">
-    <div class="col-head"><h2 id="h-Backlog">Backlog</h2><span class="badge" data-count aria-label="Backlog task count">0</span></div>
+  <section class="column s-backlog" data-status="Backlog" aria-labelledby="h-Backlog">
+    <div class="col-head"><h2 id="h-Backlog"><span aria-hidden="true">🌱</span> Backlog</h2><span class="badge s-backlog" data-count aria-label="Backlog task count">0</span></div>
     <p class="col-desc">Logged, not yet scheduled</p>
     <div class="col-body" data-body></div>
   </section>
-  <section class="column" data-status="In Progress" aria-labelledby="h-InProgress">
-    <div class="col-head"><h2 id="h-InProgress">In Progress</h2><span class="badge" data-count aria-label="In Progress task count">0</span></div>
+  <section class="column s-progress" data-status="In Progress" aria-labelledby="h-InProgress">
+    <div class="col-head"><h2 id="h-InProgress"><span aria-hidden="true">🚀</span> In Progress</h2><span class="badge s-progress" data-count aria-label="In Progress task count">0</span></div>
     <p class="col-desc">Actively being worked</p>
     <div class="col-body" data-body></div>
   </section>
-  <section class="column" data-status="Blocked" aria-labelledby="h-Blocked">
-    <div class="col-head"><h2 id="h-Blocked">Blocked</h2><span class="badge" data-count aria-label="Blocked task count">0</span></div>
+  <section class="column s-blocked" data-status="Blocked" aria-labelledby="h-Blocked">
+    <div class="col-head"><h2 id="h-Blocked"><span aria-hidden="true">🚧</span> Blocked</h2><span class="badge s-blocked" data-count aria-label="Blocked task count">0</span></div>
     <p class="col-desc">Waiting on a dependency, vendor or approval</p>
     <div class="col-body" data-body></div>
   </section>
-  <section class="column" data-status="Done" aria-labelledby="h-Done">
-    <div class="col-head"><h2 id="h-Done">Done</h2><span class="badge" data-count aria-label="Done task count">0</span></div>
+  <section class="column s-done" data-status="Done" aria-labelledby="h-Done">
+    <div class="col-head"><h2 id="h-Done"><span aria-hidden="true">🎉</span> Done</h2><span class="badge s-done" data-count aria-label="Done task count">0</span></div>
     <p class="col-desc">Completed / closed</p>
     <div class="col-body" data-body></div>
   </section>
@@ -399,13 +412,13 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 <div class="modal-backdrop" id="modal" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-head">
-      <h2 id="modal-title">Add Task</h2>
+      <h2 id="modal-title">Add task</h2>
       <button type="button" class="icon-btn" id="close-add" aria-label="Close add task dialog">×</button>
     </div>
     <form id="task-form" novalidate>
       <div class="form-grid">
         <div class="form-field full">
-          <label for="t-title">Task Title <span class="req" aria-hidden="true">*</span></label>
+          <label for="t-title">Task title <span class="req" aria-hidden="true">*</span></label>
           <input type="text" id="t-title" name="title" maxlength="80" autocomplete="off" aria-describedby="e-title">
           <p class="err" id="e-title"></p>
         </div>
@@ -415,7 +428,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
           <p class="err" id="e-description"></p>
         </div>
         <div class="form-field">
-          <label for="t-project">Project / Workstream</label>
+          <label for="t-project">Project / workstream</label>
           <select id="t-project" name="project"></select>
           <p class="err" id="e-project"></p>
         </div>
@@ -426,7 +439,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
         </div>
         <div class="form-field">
           <label for="t-assignee">Assignee <span class="req" aria-hidden="true">*</span></label>
-          <input type="text" id="t-assignee" name="assignee" autocomplete="off" aria-describedby="e-assignee">
+          <input type="text" id="t-assignee" name="assignee" maxlength="60" autocomplete="off" aria-describedby="e-assignee">
           <p class="err" id="e-assignee"></p>
         </div>
         <div class="form-field">
@@ -435,7 +448,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
           <p class="err" id="e-priority"></p>
         </div>
         <div class="form-field">
-          <label for="t-due">Due Date <span class="req" aria-hidden="true">*</span></label>
+          <label for="t-due">Due date <span class="req" aria-hidden="true">*</span></label>
           <input type="date" id="t-due" name="dueDate" aria-describedby="e-due">
           <p class="err" id="e-due"></p>
         </div>
@@ -447,7 +460,7 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" id="cancel-add">Cancel</button>
-        <button type="submit" class="btn" id="submit-btn">Add Task</button>
+        <button type="submit" class="btn" id="submit-btn">Add task</button>
       </div>
     </form>
   </div>
@@ -468,22 +481,36 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/YOUR_EMAIL@example.com";
 
 /* ==========================================================================
-   REFERENCE DATA
+   REFERENCE DATA (frozen: nothing at runtime can alter the allowed values)
    ========================================================================== */
-const STATUSES   = ["Backlog", "In Progress", "Blocked", "Done"];
-const PRIORITIES = ["Critical", "High", "Medium", "Low"];
-const PROJECTS   = ["Core Banking Upgrade", "Digital Channels", "Cybersecurity Uplift",
-                    "Data & Analytics", "Infrastructure & Cloud", "Vendor Management"];
-const CATEGORIES = ["Application Development", "Infrastructure", "Cybersecurity",
-                    "Data", "Compliance", "Vendor"];
+const STATUSES   = Object.freeze(["Backlog", "In Progress", "Blocked", "Done"]);
+const PRIORITIES = Object.freeze(["Critical", "High", "Medium", "Low"]);
+const PROJECTS   = Object.freeze(["Core Banking Upgrade", "Digital Channels", "Cybersecurity Uplift",
+                    "Data & Analytics", "Infrastructure & Cloud", "Vendor Management"]);
+const CATEGORIES = Object.freeze(["Application Development", "Infrastructure", "Cybersecurity",
+                    "Data", "Compliance", "Vendor"]);
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Display metadata. Class names are fixed here, never derived from user input.
+const STATUS_CLASS   = { "Backlog": "s-backlog", "In Progress": "s-progress", "Blocked": "s-blocked", "Done": "s-done" };
+const PRIORITY_CLASS = { "Critical": "pr-critical", "High": "pr-high", "Medium": "pr-medium", "Low": "pr-low" };
+const PRIORITY_ICON  = { "Critical": "🔥", "High": "⬆️", "Medium": "🔸", "Low": "🍃" };
+const DUE_BUCKETS = Object.freeze([
+  { key: "Overdue",       cls: "d-overdue" },
+  { key: "Within 7 days", cls: "d-week" },
+  { key: "8–14 days",     cls: "d-two" },
+  { key: "15–30 days",    cls: "d-month" },
+  { key: "30+ days",  cls: "d-later" },
+  { key: "Completed",     cls: "d-done" }
+]);
+const FILTER_LABELS = { project: "Project", status: "Status", priority: "Priority", due: "Due" };
 
 /* ==========================================================================
    STATE — single source of truth (in memory only; no storage APIs)
    ========================================================================== */
 const state = {
   tasks: [],
-  filters: { project: "", assignee: "", priority: "" },
+  filters: { project: "", status: "", priority: "", due: "", assignee: "" },
   confirmDeleteId: null,   // id of the card currently showing "Delete? Yes / No"
   draggingId: null,
   nextId: 1
@@ -497,6 +524,12 @@ function escapeHtml(value) {
   return String(value == null ? "" : value)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// Strip control characters (keeps newlines/tabs only where asked) before data leaves the page.
+function cleanText(value, keepNewlines) {
+  const re = keepNewlines ? /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g : /[\u0000-\u001F\u007F]/g;
+  return String(value == null ? "" : value).replace(re, " ").trim();
 }
 
 function pad2(n) { return String(n).padStart(2, "0"); }
@@ -518,11 +551,20 @@ function isOverdue(task) {
   return task.status !== "Done" && task.dueDate < isoDate(0);
 }
 
+// Which due-date bucket a task falls in (drives the due-date chart + filter).
+function dueBucket(task) {
+  if (task.status === "Done") return "Completed";
+  if (task.dueDate < isoDate(0))  return "Overdue";
+  if (task.dueDate <= isoDate(7))  return "Within 7 days";
+  if (task.dueDate <= isoDate(14)) return "8–14 days";
+  if (task.dueDate <= isoDate(30)) return "15–30 days";
+  return "30+ days";
+}
+
 function formatId(n) { return "UOB-ITPM-" + String(n).padStart(4, "0"); }
-
 function newTaskId() { return formatId(state.nextId++); }
-
-function priorityClass(p) { return "p-" + String(p).toLowerCase(); }
+function plural(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
+function pct(part, whole) { return whole ? Math.round(part / whole * 100) : 0; }
 
 /* ==========================================================================
    SEED DATA — 8 demo tasks (dates relative to today so Overdue is demonstrable)
@@ -544,24 +586,34 @@ function seedTasks() {
 }
 
 /* ==========================================================================
-   FILTERING
+   FILTERING — `skip` lists dimensions a chart displays itself, so selecting a
+   mark in that chart dims its siblings instead of making them vanish.
    ========================================================================== */
-function applyFilters(tasks) {
+function applyFilters(tasks, skip) {
   const f = state.filters;
+  const skipped = skip || [];
   const needle = f.assignee.trim().toLowerCase();
   return tasks.filter(function (t) {
-    if (f.project && t.project !== f.project) return false;
-    if (f.priority && t.priority !== f.priority) return false;
+    if (f.project  && skipped.indexOf("project")  === -1 && t.project  !== f.project)  return false;
+    if (f.status   && skipped.indexOf("status")   === -1 && t.status   !== f.status)   return false;
+    if (f.priority && skipped.indexOf("priority") === -1 && t.priority !== f.priority) return false;
+    if (f.due      && skipped.indexOf("due")      === -1 && dueBucket(t) !== f.due)    return false;
     if (needle && t.assignee.toLowerCase().indexOf(needle) === -1) return false;
     return true;
   });
 }
 
+function countBy(tasks, fn) {
+  const out = {};
+  tasks.forEach(function (t) { const k = fn(t); out[k] = (out[k] || 0) + 1; });
+  return out;
+}
+
 /* ==========================================================================
-   RENDERING — all card/board DOM is produced here, from state
+   RENDERING — cards
    ========================================================================== */
 function renderCard(task) {
-  const pc = priorityClass(task.priority);
+  const pc = PRIORITY_CLASS[task.priority] || "pr-medium";
   const others = STATUSES.filter(function (s) { return s !== task.status; });
   const moveOptions = others.map(function (s) {
     return '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>';
@@ -580,7 +632,7 @@ function renderCard(task) {
       ' draggable="true" data-id="' + escapeHtml(task.id) + '">' +
     '<div class="card-top">' +
       '<span class="card-id">' + escapeHtml(task.id) + '</span>' +
-      '<span class="pill ' + pc + '">' + escapeHtml(task.priority) + '</span>' +
+      '<span class="pill ' + pc + '"><span aria-hidden="true">' + (PRIORITY_ICON[task.priority] || "") + '</span> ' + escapeHtml(task.priority) + '</span>' +
     '</div>' +
     '<h3 class="card-title">' + escapeHtml(task.title) + '</h3>' +
     '<div class="card-meta">' +
@@ -589,7 +641,7 @@ function renderCard(task) {
     '</div>' +
     '<div class="card-row">' +
       '<span class="due">Due ' + escapeHtml(formatDate(task.dueDate)) + '</span>' +
-      (isOverdue(task) ? '<span class="overdue">Overdue</span>' : '') +
+      (isOverdue(task) ? '<span class="overdue"><span aria-hidden="true">⏰</span> Overdue</span>' : '') +
       '<span class="tag">' + escapeHtml(task.category) + '</span>' +
     '</div>' +
     '<div class="card-actions">' +
@@ -602,16 +654,203 @@ function renderCard(task) {
   '</article>';
 }
 
-function renderSummary() {
-  const all = state.tasks;
-  const items = [{ label: "Total", num: all.length, cls: "" }];
-  STATUSES.forEach(function (s) {
-    items.push({ label: s, num: all.filter(function (t) { return t.status === s; }).length, cls: "" });
+/* ==========================================================================
+   RENDERING — dashboard (KPI tiles + charts). All chart markup comes from
+   fixed reference values and integer counts; free text is escaped.
+   ========================================================================== */
+// Interactive mark attributes. `pairs` is [[dim, value], ...] toggled on click.
+function markAttrs(key, pairs, tipTitle, tipBody, label) {
+  const filter = pairs.map(function (p) { return p[0] + "=" + p[1]; }).join(";");
+  return ' data-key="' + escapeHtml(key) + '" data-filter="' + escapeHtml(filter) + '"' +
+    ' data-tip-t="' + escapeHtml(tipTitle) + '" data-tip-b="' + escapeHtml(tipBody) + '"' +
+    ' aria-label="' + escapeHtml(label) + '"' +
+    ' aria-pressed="' + (pairsActive(pairs) ? "true" : "false") + '"';
+}
+
+function pairsActive(pairs) {
+  return pairs.every(function (p) { return state.filters[p[0]] === p[1]; });
+}
+
+// Dimmed when a filter exists on a dimension this mark belongs to and it doesn't match.
+function markState(pairs) {
+  let dim = false;
+  pairs.forEach(function (p) {
+    if (state.filters[p[0]] && state.filters[p[0]] !== p[1]) dim = true;
   });
-  items.push({ label: "Overdue", num: all.filter(isOverdue).length, cls: "is-overdue" });
-  document.getElementById("summary").innerHTML = items.map(function (i) {
-    return '<li class="' + i.cls + '"><span class="num">' + i.num + '</span><span class="lbl">' + escapeHtml(i.label) + '</span></li>';
+  return (pairsActive(pairs) ? " is-on" : "") + (dim ? " is-dim" : "");
+}
+
+function renderKpis() {
+  const all = state.tasks;
+  const byStatus = countBy(all, function (t) { return t.status; });
+  const overdue = all.filter(isOverdue).length;
+  const done = byStatus["Done"] || 0;
+  const tiles = [
+    { cls: "s-total",    num: all.length,                     lbl: "Total tasks", icon: "🧸", filter: "clear" },
+    { cls: "s-backlog",  num: byStatus["Backlog"] || 0,       lbl: "Backlog",     icon: "🌱", filter: "status=Backlog" },
+    { cls: "s-progress", num: byStatus["In Progress"] || 0,   lbl: "In progress", icon: "🚀", filter: "status=In Progress" },
+    { cls: "s-blocked",  num: byStatus["Blocked"] || 0,       lbl: "Blocked",     icon: "🚧", filter: "status=Blocked" },
+    { cls: "s-done",     num: done,                           lbl: "Done",        icon: "🎉", filter: "status=Done" },
+    { cls: "s-overdue",  num: overdue,                        lbl: "Overdue",     icon: "⏰", filter: "due=Overdue" }
+  ];
+  const html = tiles.map(function (t) {
+    const active = t.filter === "clear"
+      ? !state.filters.status && !state.filters.due && !state.filters.project && !state.filters.priority
+      : t.filter.split(";").every(function (p) { const kv = p.split("="); return state.filters[kv[0]] === kv[1]; });
+    return '<button type="button" class="kpi ' + t.cls + '" data-key="kpi|' + escapeHtml(t.lbl) + '"' +
+      ' data-filter="' + escapeHtml(t.filter) + '" aria-pressed="' + (active ? "true" : "false") + '"' +
+      ' aria-label="' + escapeHtml(t.lbl + ": " + t.num) + '">' +
+      '<span class="kpi-num"><span aria-hidden="true">' + t.icon + '</span> ' + t.num + '</span>' +
+      '<span class="kpi-lbl">' + escapeHtml(t.lbl) + '</span></button>';
   }).join("");
+  const rate = pct(done, all.length);
+  const rateTile = '<div class="kpi s-rate" role="group" aria-label="Completion rate ' + rate + ' percent">' +
+    '<span class="kpi-num"><span aria-hidden="true">⭐</span> ' + rate + '%</span>' +
+    '<span class="kpi-lbl">Completed</span>' +
+    '<span class="meter" aria-hidden="true"><span style="width:' + rate + '%"></span></span></div>';
+  document.getElementById("kpis").innerHTML = html + rateTile;
+}
+
+function statusLegend(counts) {
+  return '<div class="legend" role="group" aria-label="Status legend">' + STATUSES.map(function (s) {
+    const pairs = [["status", s]];
+    return '<button type="button" class="' + STATUS_CLASS[s] + '" data-key="legend|' + escapeHtml(s) + '"' +
+      ' data-filter="status=' + escapeHtml(s) + '" aria-pressed="' + (pairsActive(pairs) ? "true" : "false") + '">' +
+      '<span class="swatch"></span>' + escapeHtml(s) + (counts ? ' <span>' + (counts[s] || 0) + '</span>' : '') + '</button>';
+  }).join("") + '</div>';
+}
+
+// Donut path for one slice (angles in radians, 0 = 12 o'clock).
+function arcPath(cx, cy, r0, r1, a0, a1) {
+  function pt(r, a) { return (cx + r * Math.sin(a)).toFixed(2) + " " + (cy - r * Math.cos(a)).toFixed(2); }
+  const large = a1 - a0 > Math.PI ? 1 : 0;
+  return "M" + pt(r1, a0) + "A" + r1 + " " + r1 + " 0 " + large + " 1 " + pt(r1, a1) +
+         "L" + pt(r0, a1) + "A" + r0 + " " + r0 + " 0 " + large + " 0 " + pt(r0, a0) + "Z";
+}
+
+function chartStatus() {
+  const data = applyFilters(state.tasks, ["status"]);
+  const counts = countBy(data, function (t) { return t.status; });
+  const total = data.length;
+  let svg;
+  if (!total) {
+    svg = '<circle class="ring-empty" cx="110" cy="110" r="74"></circle>';
+  } else {
+    let angle = 0;
+    svg = STATUSES.map(function (s) {
+      const n = counts[s] || 0;
+      if (!n) return "";
+      const sweep = Math.min(n / total * Math.PI * 2, Math.PI * 2 - 0.001);
+      const pairs = [["status", s]];
+      const d = arcPath(110, 110, 56, 92, angle, angle + sweep);
+      angle += n / total * Math.PI * 2;
+      const label = s + ": " + plural(n, "task") + ", " + pct(n, total) + "%";
+      return '<path class="' + STATUS_CLASS[s] + markState(pairs) + '" d="' + d + '" tabindex="0" role="button"' +
+        markAttrs("slice|" + s, pairs, s, plural(n, "task") + " · " + pct(n, total) + "% of tasks", label) +
+        ' data-center-n="' + n + '" data-center-l="' + escapeHtml(s) + '"></path>';
+    }).join("");
+  }
+  return '<section class="panel" aria-label="Tasks by status"><header><h2>Tasks by status</h2>' +
+    '<p class="section-hint">Share of tasks in each column</p></header>' +
+    '<div class="donut-wrap"><svg class="donut" viewBox="0 0 220 220" role="group" aria-label="Donut chart of tasks by status">' + svg +
+    '<text class="c-num" id="donut-num" x="110" y="116" data-n="' + total + '" data-l="tasks">' + total + '</text>' +
+    '<text class="c-lbl" id="donut-lbl" x="110" y="136">tasks</text></svg></div>' +
+    statusLegend(counts) + '</section>';
+}
+
+function chartProjects() {
+  const data = applyFilters(state.tasks, ["project", "status"]);
+  const rows = PROJECTS.map(function (p) {
+    const mine = data.filter(function (t) { return t.project === p; });
+    return { project: p, total: mine.length, counts: countBy(mine, function (t) { return t.status; }) };
+  });
+  const max = Math.max.apply(null, rows.map(function (r) { return r.total; }).concat([1]));
+  const body = rows.map(function (r) {
+    const segs = STATUSES.map(function (s) {
+      const n = r.counts[s] || 0;
+      if (!n) return "";
+      const pairs = [["project", r.project], ["status", s]];
+      return '<button type="button" class="hseg mark ' + STATUS_CLASS[s] + markState(pairs) + '" style="width:' + (n / max * 100).toFixed(2) + '%"' +
+        markAttrs("seg|" + r.project + "|" + s, pairs, r.project, s + " · " + plural(n, "task"),
+          r.project + ", " + s + ": " + plural(n, "task")) + '>' + n + '</button>';
+    }).join("");
+    const rowPair = [["project", r.project]];
+    return '<div class="hrow"><button type="button" class="hlabel" data-key="plabel|' + escapeHtml(r.project) + '"' +
+      ' data-filter="project=' + escapeHtml(r.project) + '" aria-pressed="' + (pairsActive(rowPair) ? "true" : "false") + '">' + escapeHtml(r.project) + '</button>' +
+      '<div class="htrack">' + segs + '</div><span class="htotal">' + r.total + '</span></div>';
+  }).join("");
+  return '<section class="panel" aria-label="Tasks by project"><header><h2>Workload by project</h2>' +
+    '<p class="section-hint">Each bar is split by status</p></header>' +
+    '<div class="hbars">' + body + '</div>' + statusLegend(null) + '</section>';
+}
+
+function chartPriority() {
+  const data = applyFilters(state.tasks, ["priority"]);
+  const counts = countBy(data, function (t) { return t.priority; });
+  const max = Math.max.apply(null, PRIORITIES.map(function (p) { return counts[p] || 0; }).concat([1]));
+  const body = PRIORITIES.map(function (p) {
+    const n = counts[p] || 0;
+    const pairs = [["priority", p]];
+    const bar = n ? '<button type="button" class="hseg mark ' + PRIORITY_CLASS[p] + markState(pairs) + '" style="width:' + (n / max * 100).toFixed(2) + '%"' +
+      markAttrs("pri|" + p, pairs, p + " priority", plural(n, "task") + " · " + pct(n, data.length) + "% of tasks", p + ": " + plural(n, "task")) + '>' + n + '</button>' : "";
+    return '<div class="hrow"><button type="button" class="hlabel" data-key="prilabel|' + p + '" data-filter="priority=' + p + '"' +
+      ' aria-pressed="' + (pairsActive(pairs) ? "true" : "false") + '"><span aria-hidden="true">' + PRIORITY_ICON[p] + '</span> ' + p + '</button>' +
+      '<div class="htrack">' + bar + '</div><span class="htotal">' + n + '</span></div>';
+  }).join("");
+  return '<section class="panel" aria-label="Tasks by priority"><header><h2>Priority mix</h2>' +
+    '<p class="section-hint">How urgent is the work?</p></header><div class="hbars">' + body + '</div></section>';
+}
+
+function chartDue() {
+  const data = applyFilters(state.tasks, ["due"]);
+  const counts = countBy(data, dueBucket);
+  const max = Math.max.apply(null, DUE_BUCKETS.map(function (b) { return counts[b.key] || 0; }).concat([1]));
+  const cols = DUE_BUCKETS.map(function (b) {
+    const n = counts[b.key] || 0;
+    const pairs = [["due", b.key]];
+    const h = n ? Math.max(n / max * 100, 6) : 0;
+    const label = b.key + ": " + plural(n, "task");
+    return '<button type="button" class="vcol mark-col ' + b.cls + markState(pairs).replace("is-on", "is-on") + '"' +
+      markAttrs("due|" + b.key, pairs, b.key, plural(n, "task") + " · " + pct(n, data.length) + "% of tasks", label) + '>' +
+      '<span class="v-num">' + n + '</span><span class="v-track"><span class="v-fill' + (n ? "" : " is-zero") + '" style="height:' + h.toFixed(1) + '%"></span></span>' +
+      '<span class="v-lbl">' + escapeHtml(b.key) + '</span></button>';
+  }).join("");
+  return '<section class="panel" aria-label="Tasks by due date"><header><h2>Due-date timeline</h2>' +
+    '<p class="section-hint">When work lands, from overdue to later</p></header><div class="vcols">' + cols + '</div></section>';
+}
+
+function renderDashboard() {
+  hideTooltip();
+  renderKpis();
+  document.getElementById("charts").innerHTML = chartStatus() + chartProjects() + chartPriority() + chartDue();
+}
+
+/* ==========================================================================
+   RENDERING — filter chips, controls and board
+   ========================================================================== */
+function renderChips() {
+  const f = state.filters;
+  const chips = [];
+  ["project", "status", "priority", "due"].forEach(function (dim) {
+    if (f[dim]) chips.push({ dim: dim, text: FILTER_LABELS[dim] + ": " + f[dim] });
+  });
+  if (f.assignee.trim()) chips.push({ dim: "assignee", text: "Assignee: " + f.assignee.trim() });
+  const shown = applyFilters(state.tasks).length;
+  const summary = '<span>Showing ' + shown + ' of ' + plural(state.tasks.length, "task") + '</span>';
+  document.getElementById("chips").innerHTML = summary + chips.map(function (c) {
+    return '<span class="chip">' + escapeHtml(c.text) +
+      '<button type="button" data-chip="' + escapeHtml(c.dim) + '" aria-label="Remove filter ' + escapeHtml(c.text) + '">×</button></span>';
+  }).join("");
+}
+
+function syncControls() {
+  const f = state.filters;
+  [["f-project", f.project], ["f-status", f.status], ["f-priority", f.priority]].forEach(function (p) {
+    const el = document.getElementById(p[0]);
+    if (el.value !== p[1]) el.value = p[1];
+  });
+  const a = document.getElementById("f-assignee");
+  if (a.value !== f.assignee) a.value = f.assignee;
 }
 
 function renderBoard() {
@@ -622,9 +861,11 @@ function renderBoard() {
     col.querySelector("[data-count]").textContent = tasks.length;
     col.querySelector("[data-body]").innerHTML = tasks.length
       ? tasks.map(renderCard).join("")
-      : '<p class="empty">No tasks</p>';
+      : '<p class="empty">No tasks here yet</p>';
   });
-  renderSummary();
+  syncControls();
+  renderChips();
+  renderDashboard();
 }
 
 // Restore keyboard focus after a re-render replaced the focused element.
@@ -667,16 +908,73 @@ function addTask(data) {
   return task;
 }
 
+// Apply a "dim=value;dim=value" filter spec from a chart mark. Clicking an
+// already-active mark clears it. Only known dimensions and values are accepted.
+const FILTER_ALLOWED = {
+  project:  PROJECTS,
+  status:   STATUSES,
+  priority: PRIORITIES,
+  due:      DUE_BUCKETS.map(function (b) { return b.key; })
+};
+function applyFilterSpec(spec) {
+  if (spec === "clear") {
+    ["project", "status", "priority", "due"].forEach(function (d) { state.filters[d] = ""; });
+    return true;
+  }
+  const pairs = spec.split(";").map(function (p) { const i = p.indexOf("="); return [p.slice(0, i), p.slice(i + 1)]; });
+  const valid = pairs.every(function (p) { return FILTER_ALLOWED[p[0]] && FILTER_ALLOWED[p[0]].indexOf(p[1]) !== -1; });
+  if (!valid) return false;
+  const allOn = pairsActive(pairs);
+  pairs.forEach(function (p) { state.filters[p[0]] = allOn ? "" : p[1]; });
+  return true;
+}
+
 /* ==========================================================================
    TOASTS
    ========================================================================== */
 function showToast(message, type) {
   const region = document.getElementById("toasts");
   const el = document.createElement("div");
-  el.className = "toast " + (type || "");
+  el.className = "toast " + (type === "success" || type === "warning" ? type : "");
   el.textContent = message;   // textContent: no HTML injection
   region.appendChild(el);
   setTimeout(function () { el.remove(); }, 5000);
+}
+
+/* ==========================================================================
+   TOOLTIP — content set with textContent only
+   ========================================================================== */
+const tooltip = document.getElementById("tooltip");
+
+function showTooltip(el, x, y) {
+  const t = el.dataset.tipT;
+  if (!t) return;
+  tooltip.textContent = "";
+  const strong = document.createElement("strong");
+  strong.textContent = t;
+  const span = document.createElement("span");
+  span.textContent = el.dataset.tipB || "";
+  tooltip.appendChild(strong);
+  tooltip.appendChild(span);
+  tooltip.hidden = false;
+  moveTooltip(x, y);
+}
+
+function moveTooltip(x, y) {
+  const w = tooltip.offsetWidth, h = tooltip.offsetHeight;
+  const left = Math.min(Math.max(8, x + 14), window.innerWidth - w - 8);
+  const top = y + 18 + h > window.innerHeight ? Math.max(8, y - h - 14) : y + 18;
+  tooltip.style.left = left + "px";
+  tooltip.style.top = top + "px";
+}
+
+function hideTooltip() { tooltip.hidden = true; }
+
+function setDonutCenter(el) {
+  const n = document.getElementById("donut-num"), l = document.getElementById("donut-lbl");
+  if (!n || !l) return;
+  if (el && el.dataset.centerN) { n.textContent = el.dataset.centerN; l.textContent = el.dataset.centerL; }
+  else { n.textContent = n.dataset.n; l.textContent = n.dataset.l; }
 }
 
 /* ==========================================================================
@@ -686,16 +984,18 @@ async function notifyNewTask(task) {
   const res = await fetch(FORMSUBMIT_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
+    referrerPolicy: "no-referrer",
+    credentials: "omit",
     body: JSON.stringify({
-      _subject: `[UOB IT PMO] New task ${task.id}: ${task.title}`,
+      _subject: `[UOB IT PMO] New task ${task.id}: ${cleanText(task.title)}`,
       _template: "table",
       _captcha: "false",
       "Task ID": task.id,
-      Title: task.title,
-      Description: task.description,
+      Title: cleanText(task.title),
+      Description: cleanText(task.description, true),
       Project: task.project,
       Category: task.category,
-      Assignee: task.assignee,
+      Assignee: cleanText(task.assignee),
       Priority: task.priority,
       "Due Date": task.dueDate,
       Status: task.status,
@@ -742,8 +1042,9 @@ function validateForm(d) {
   if (PROJECTS.indexOf(d.project) === -1) errors.project = "Choose a project.";
   if (CATEGORIES.indexOf(d.category) === -1) errors.category = "Choose a category.";
   if (!d.assignee) errors.assignee = "Assignee is required.";
+  else if (d.assignee.length > 60) errors.assignee = "Assignee must be 60 characters or fewer.";
   if (PRIORITIES.indexOf(d.priority) === -1) errors.priority = "Choose a priority.";
-  if (!d.dueDate) errors.due = "Due date is required.";
+  if (!d.dueDate || !/^\d{4}-\d{2}-\d{2}$/.test(d.dueDate)) errors.due = "Due date is required.";
   else if (d.dueDate < isoDate(0)) errors.due = "Due date must not be in the past.";
   if (STATUSES.indexOf(d.status) === -1) errors.status = "Choose a status.";
 
@@ -796,10 +1097,10 @@ async function handleSubmit(event) {
     await notifyNewTask(task);
     showToast("Task " + task.id + " added — email notification sent.", "success");
   } catch (err) {
-    showToast("Card added locally — email notification failed", "warning");
+    showToast("Task added to the board — email notification failed.", "warning");
   } finally {
     btn.disabled = false;
-    btn.textContent = "Add Task";
+    btn.textContent = "Add task";
     resetForm();
     closeModal();
   }
@@ -816,6 +1117,7 @@ function fillSelect(el, values, firstLabel) {
 
 function initSelects() {
   fillSelect(document.getElementById("f-project"), PROJECTS, "All projects");
+  fillSelect(document.getElementById("f-status"), STATUSES, "All statuses");
   fillSelect(document.getElementById("f-priority"), PRIORITIES, "All priorities");
   fillSelect(document.getElementById("t-project"), PROJECTS);
   fillSelect(document.getElementById("t-category"), CATEGORIES);
@@ -827,19 +1129,70 @@ function initSelects() {
 function initFilters() {
   function sync() {
     state.filters.project = document.getElementById("f-project").value;
+    state.filters.status = document.getElementById("f-status").value;
     state.filters.priority = document.getElementById("f-priority").value;
-    state.filters.assignee = document.getElementById("f-assignee").value;
+    state.filters.assignee = document.getElementById("f-assignee").value.slice(0, 60);
     renderBoard();
   }
-  document.getElementById("f-project").addEventListener("change", sync);
-  document.getElementById("f-priority").addEventListener("change", sync);
+  ["f-project", "f-status", "f-priority"].forEach(function (id) {
+    document.getElementById(id).addEventListener("change", sync);
+  });
   document.getElementById("f-assignee").addEventListener("input", sync);
   document.getElementById("clear-filters").addEventListener("click", function () {
-    document.getElementById("f-project").value = "";
-    document.getElementById("f-priority").value = "";
-    document.getElementById("f-assignee").value = "";
-    sync();
+    state.filters = { project: "", status: "", priority: "", due: "", assignee: "" };
+    renderBoard();
   });
+  document.getElementById("chips").addEventListener("click", function (e) {
+    const btn = e.target.closest("button[data-chip]");
+    if (!btn || !(btn.dataset.chip in state.filters)) return;
+    state.filters[btn.dataset.chip] = "";
+    renderBoard();
+  });
+}
+
+// Dashboard: click-to-filter (Tableau-style cross-filtering), hover tooltips, keyboard parity.
+function initDashboardEvents() {
+  const dash = document.querySelector(".dashboard");
+
+  dash.addEventListener("click", function (e) {
+    const el = e.target.closest("[data-filter]");
+    if (!el) return;
+    const key = el.dataset.key;
+    if (!applyFilterSpec(el.dataset.filter)) return;
+    renderBoard();
+    refocus('[data-key="' + key + '"]');
+  });
+
+  // SVG <path role=button> needs Enter/Space handled by hand.
+  dash.addEventListener("keydown", function (e) {
+    const el = e.target.closest("path[data-filter]");
+    if (el && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); el.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
+  });
+
+  dash.addEventListener("mouseover", function (e) {
+    const el = e.target.closest("[data-tip-t]");
+    if (!el) return;
+    showTooltip(el, e.clientX, e.clientY);
+    setDonutCenter(el);
+  });
+  dash.addEventListener("mousemove", function (e) {
+    if (!tooltip.hidden) moveTooltip(e.clientX, e.clientY);
+  });
+  dash.addEventListener("mouseout", function (e) {
+    const el = e.target.closest("[data-tip-t]");
+    if (!el || el.contains(e.relatedTarget)) return;
+    hideTooltip();
+    setDonutCenter(null);
+  });
+  dash.addEventListener("focusin", function (e) {
+    const el = e.target.closest("[data-tip-t]");
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    showTooltip(el, r.left + r.width / 2, r.top + r.height / 2);
+    setDonutCenter(el);
+  });
+  dash.addEventListener("focusout", function () { hideTooltip(); setDonutCenter(null); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") hideTooltip(); });
 }
 
 function initBoardEvents() {
@@ -874,7 +1227,7 @@ function initBoardEvents() {
     }
   });
 
-  // Drag and drop (native HTML5 API)
+  // Drag and drop (native HTML5 API). Dropped ids are re-validated against state.
   board.addEventListener("dragstart", function (e) {
     const card = e.target.closest(".card");
     if (!card) return;
@@ -906,7 +1259,8 @@ function initBoardEvents() {
     const col = e.target.closest(".column");
     if (!col) return;
     e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain") || state.draggingId;
+    if (!state.draggingId) return;       // ignore drops that didn't start from a card here (e.g. external text/files)
+    const id = state.draggingId;
     clearDropTargets();
     state.draggingId = null;
     if (!moveTask(id, col.dataset.status)) renderBoard();
@@ -945,6 +1299,7 @@ function initModalEvents() {
 seedTasks();
 initSelects();
 initFilters();
+initDashboardEvents();
 initBoardEvents();
 initModalEvents();
 renderBoard();
