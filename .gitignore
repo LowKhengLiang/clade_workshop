@@ -7,3 +7,4 @@ id_rsa*
 .claude/settings.local.json
 node_modules/
 _site/
+.playwright-mcp/

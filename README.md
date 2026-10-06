@@ -4,6 +4,8 @@ A single-file Kanban board demo for an IT PMO team at a fictitious bank. Built w
 
 **Live demo:** https://LowKhengLiang.github.io/clade_workshop/
 
+![IT PMO Project Board screenshot](docs/screenshot.png)
+
 ## Features
 
 - Four columns: Backlog, In Progress, Blocked, Done.

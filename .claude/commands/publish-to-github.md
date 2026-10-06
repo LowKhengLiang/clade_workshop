@@ -31,9 +31,17 @@ Handling:
 - If anything sensitive is found in git HISTORY, STOP. Do not push. Tell the user what was found and where, and that history must be rewritten and any credential rotated. Do not rewrite history without explicit approval.
 - Finish with a short report: what was scanned, what was found, what was fixed. Only continue if the result is clean or the user explicitly accepts the remaining items.
 
-## 3. README
+## 3. Screenshot
+Capture a fresh screenshot of the app with the Playwright MCP tools (load them via ToolSearch if deferred):
+- Playwright blocks `file:` URLs, so serve the project locally: `python3 -m http.server 8765 --bind 127.0.0.1` in the background (from the project root), and stop it when done.
+- `browser_resize` to 1440x900, `browser_navigate` to `http://127.0.0.1:8765/index.html?v=<timestamp>` (the cache-buster avoids a stale cached page), then `browser_take_screenshot` with `fullPage: true`, `type: "png"` and `filename: "docs/screenshot.png"` (overwrite the existing one).
+- Read the image to confirm the board rendered (columns, cards, summary strip) before using it.
+- Ensure `.playwright-mcp/` is in `.gitignore`; never commit it. Stage only `docs/screenshot.png`.
+
+## 4. README
 Create or update `README.md` (edit existing content rather than overwriting it). Base it on the actual code in `index.html`, and include:
 - Title and one-line description (IT PMO Kanban board demo for a bank).
+- The screenshot, embedded as `![IT PMO Project Board screenshot](docs/screenshot.png)` just below the live demo link.
 - Live demo link: `https://<owner>.github.io/<repo>/`.
 - Features (Kanban columns, drag-and-drop plus keyboard "Move ▸", filters, summary strip, overdue highlighting, Add Task with email notification via FormSubmit).
 - How to run locally (`open index.html`).
@@ -41,26 +49,26 @@ Create or update `README.md` (edit existing content rather than overwriting it).
 - Deployment: GitHub Actions to GitHub Pages.
 Do not put the notification email address in the README.
 
-## 4. GitHub Actions CI/CD
+## 5. GitHub Actions CI/CD
 Create or update `.github/workflows/` (an existing Pages deploy workflow may already be there; read it first and improve rather than duplicate). One workflow, triggered on push to the default branch and `workflow_dispatch`, with:
 - A `validate` job: checkout, extract the `<script>` body from `index.html` and run `node --check`; fail if `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `!important`, or `http(s)://` CDN references (other than the FormSubmit endpoint) appear; a secret-pattern grep over the repo.
 - A `deploy` job (needs `validate`): `actions/configure-pages`, `actions/upload-pages-artifact` (publish only `index.html`, not the whole repo), `actions/deploy-pages`.
 - Permissions: `contents: read`, `pages: write`, `id-token: write`. Concurrency group `pages`. Pin actions to current major versions.
 
-## 5. Commit and push
+## 6. Commit and push
 - If there is no `origin`, `git remote add origin <repo-url>`; if `origin` differs from the given URL, ask before changing it.
 - Stage specific files (never `git add -A` blindly; re-check `git status` against the scan results), commit with a clear message ending with the Co-Authored-By line from the session's attribution rules, then `git push -u origin <branch>`.
 - Never force-push. If the push is rejected, report why and ask.
 
-## 6. GitHub Pages
+## 7. GitHub Pages
 - Enable Pages with the Actions source: `gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow` (if it already exists, use `-X PUT` instead).
 - Watch the deploy: `gh run list --limit 1` then `gh run watch <id>`. If it fails, read `gh run view <id> --log-failed`, fix, and re-push.
 - Confirm the URL with `gh api repos/<owner>/<repo>/pages --jq .html_url` and check it responds (`curl -sI`).
 
-## 7. Repo About section
+## 8. Repo About section
 Set description, homepage (the Pages URL) and topics:
 `gh repo edit <owner>/<repo> --description "IT PMO Kanban board demo for a bank: single-file vanilla HTML/CSS/JS, drag-and-drop, no dependencies" --homepage "<pages-url>" --add-topic kanban --add-topic pmo --add-topic vanilla-js --add-topic github-pages`
 If an About description already exists, show it and keep it unless it is empty or clearly stale.
 
-## 8. Final report
+## 9. Final report
 Give the user a short summary: repo URL, Pages URL, workflow status, security scan result, and anything they must do manually (for example, confirming the FormSubmit activation email, or a Pages setting that needed owner permissions).
