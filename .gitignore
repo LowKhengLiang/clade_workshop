@@ -1,0 +1,9 @@
+.env*
+*.pem
+*.key
+*.p12
+id_rsa*
+.DS_Store
+.claude/settings.local.json
+node_modules/
+_site/

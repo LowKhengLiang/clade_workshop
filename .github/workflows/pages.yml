@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: CI/CD - Validate and Deploy to GitHub Pages
 
 on:
   push:
@@ -15,7 +15,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax-check inline script
+        run: |
+          awk '/<script>/{f=1;next} /<\/script>/{f=0} f' index.html > "$RUNNER_TEMP/app.js"
+          node --check "$RUNNER_TEMP/app.js"
+
+      - name: Enforce project constraints
+        run: |
+          fail=0
+          if grep -nE 'localStorage|sessionStorage|indexedDB|document\.cookie' index.html; then
+            echo "::error::Persistence APIs are not allowed"; fail=1
+          fi
+          if grep -n '!important' index.html; then
+            echo "::error::!important is not allowed"; fail=1
+          fi
+          if grep -nE 'https?://' index.html | grep -v 'formsubmit.co/ajax/'; then
+            echo "::error::Only the FormSubmit endpoint may be an external URL"; fail=1
+          fi
+          exit $fail
+
+      - name: Secret scan
+        run: |
+          if grep -rnIE --exclude-dir=.git 'AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|github_pat_|xox[baprs]-|AIza[0-9A-Za-z_-]{20,}|BEGIN [A-Z ]*PRIVATE KEY' .; then
+            echo "::error::Possible secret found"; exit 1
+          fi
+
   deploy:
+    needs: validate
     runs-on: ubuntu-latest
     environment:
       name: github-pages
